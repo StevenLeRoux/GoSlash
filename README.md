@@ -1,6 +1,6 @@
 # GoSlash
 
-GoSlash is a redirection service accessible via http://go/ that can be use in many ways to increase productivity or ease the day to day web browsing.
+GoSlash is a redirection service accessible via (http://)go/ that can be use in many ways to increase productivity or ease the day to day web browsing.
 
 For example :
 
@@ -16,7 +16,7 @@ For example :
 
 ## How it works
 
-To work, you need that http://go/ can be resolved. Some ways to do it : 
+To make it work, you need that http://go/ can be resolved. Some ways to do it : 
   - without proxy : put the IP of the go service in a /etc/hosts
   - with proxy : have a `go.<domain.tld>` that resolves and set `append_domain` on `<domain.tld>` on your proxy
 
