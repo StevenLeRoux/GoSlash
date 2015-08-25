@@ -24,7 +24,6 @@ def apply(target,path):
   print params
 
   plist = paramre.findall(target)
-  print plist
  
   if not plist:
     print "no dynamic param"
