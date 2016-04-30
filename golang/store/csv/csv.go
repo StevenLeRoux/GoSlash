@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"le-roux.info/goslash/golang/store/common"
+	"github.com/StevenLeRoux/goslash/golang/store/common"
 )
 
 type CsvStruct struct {

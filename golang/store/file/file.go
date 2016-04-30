@@ -11,7 +11,7 @@ import (
 	"time"
 	//"os"
 
-	"le-roux.info/goslash/golang/store/common"
+	"github.com/StevenLeRoux/goslash/golang/store/common"
 )
 
 type StoreFile struct {

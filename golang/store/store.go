@@ -2,11 +2,11 @@ package store
 
 import (
 	"fmt"
-	"le-roux.info/goslash/golang/store/csv"
+	"github.com/StevenLeRoux/goslash/golang/store/csv"
 	"log"
 
-	"le-roux.info/goslash/golang/store/common"
-	"le-roux.info/goslash/golang/store/file"
+	"github.com/StevenLeRoux/goslash/golang/store/common"
+	"github.com/StevenLeRoux/goslash/golang/store/file"
 )
 
 type Store interface {
