@@ -6,13 +6,14 @@ import (
 	"github.com/gorilla/mux"
 	"le-roux.info/goslash/golang/redirect"
 	"le-roux.info/goslash/golang/store"
-
 	"le-roux.info/goslash/golang/store/common"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
+// Config struct aims to offer a structure for loading configuration
 type Config struct {
 	Auth struct {
 		Enabled string
@@ -26,21 +27,24 @@ type Config struct {
 	}
 }
 
-func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
-	w.WriteHeader(status)
-	if status == http.StatusNotFound {
-		fmt.Fprint(w, "404")
-	}
+type goslash struct {
+	config Config
+	store  store.Store
 }
 
-func GoHandler(w http.ResponseWriter, r *http.Request, s store.Store) {
+func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
+	w.WriteHeader(http.StatusInternalServerError)
+	fmt.Fprintf(w, "Error: "+strconv.Itoa(status))
+}
+
+func (g goslash) GoHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	raw := params["alias"]
 	args := strings.Split(raw, "/")
 	fmt.Println("Args: ")
 	fmt.Println(args)
 	alias := args[0]
-	values, ok := s.Get(alias)
+	values, ok := g.store.Get(alias)
 
 	if !ok {
 		errorHandler(w, r, http.StatusNotFound)
@@ -62,14 +66,21 @@ func GoHandler(w http.ResponseWriter, r *http.Request, s store.Store) {
 	return
 }
 
-func PutHandler(w http.ResponseWriter, r *http.Request, s store.Store) {
+func (g goslash) PutHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	raw := params["alias"]
 	args := strings.Split(raw, "/")
 	fmt.Println("Args: ", args)
 	alias := args[0]
-	v := common.Values{Alias: alias, Target: "Target", User: "User", Created: "Created", Modified: "Modified", Description: "Description"}
-	err := s.Put(v)
+	v := common.Values{
+		Alias:       alias,
+		Target:      "Target",
+		User:        "User",
+		Created:     "Created",
+		Modified:    "Modified",
+		Description: "Description",
+	}
+	err := g.store.Put(v)
 	if err != nil {
 		log.Println("PutHandler() - s.Put() => err")
 		errorHandler(w, r, http.StatusNotModified)
@@ -80,16 +91,15 @@ func PutHandler(w http.ResponseWriter, r *http.Request, s store.Store) {
 	return
 }
 
-func TestHandler(w http.ResponseWriter, r *http.Request) {
+func Get200(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/html")
+	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "200 OK")
 }
 
-func UpdateHandler(w http.ResponseWriter, r *http.Request, s store.Store) {
-	s.Update()
+func (g goslash) UpdateHandler(w http.ResponseWriter, r *http.Request) {
+	g.store.Update()
 	w.WriteHeader(http.StatusAccepted)
-	w.Header().Add("Content-Type", "text/html")
-	fmt.Fprintf(w, "201 Accepted")
 }
 
 func main() {
@@ -104,17 +114,16 @@ func main() {
 		log.Panic(err)
 	}
 
+	g := &goslash{
+		config: cfg,
+		store:  *s,
+	}
+
 	r := mux.NewRouter()
-	r.HandleFunc("/200", TestHandler).Methods("GET")
-	r.HandleFunc("/update", func(w http.ResponseWriter, r *http.Request) {
-		UpdateHandler(w, r, *s)
-	}).Methods("GET")
-	r.HandleFunc("/set/{alias:.+}", func(w http.ResponseWriter, r *http.Request) {
-		PutHandler(w, r, *s)
-	}).Methods("PUT")
-	r.HandleFunc("/{alias:.+}", func(w http.ResponseWriter, r *http.Request) {
-		GoHandler(w, r, *s)
-	}).Methods("GET")
+	r.HandleFunc("/200", Get200).Methods("GET")
+	r.HandleFunc("/update", g.UpdateHandler).Methods("GET")
+	r.HandleFunc("/set/{alias:.+}", g.PutHandler).Methods("PUT")
+	r.HandleFunc("/{alias:.+}", g.GoHandler).Methods("GET")
 	http.Handle("/", r)
 
 	// HTTP - port 80
@@ -124,4 +133,5 @@ func main() {
 		log.Fatal("ListenAndServe: ", err)
 		fmt.Printf("ListenAndServe:%s\n", err.Error())
 	}
+
 }
