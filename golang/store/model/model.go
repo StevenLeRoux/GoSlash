@@ -1,4 +1,4 @@
-package common
+package model
 
 type Values struct {
 	Alias       string `json:"alias"`

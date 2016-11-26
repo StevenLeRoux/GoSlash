@@ -1,0 +1,6 @@
+goslash:
+  loglevel: 6
+
+store:
+  type: "file"
+  location: "/opt/goslash/data/store.db"

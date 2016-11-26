@@ -2,7 +2,9 @@ package file
 
 import (
 	//"encoding/csv"
+	"github.com/StevenLeRoux/goslash/golang/store/model"
 	"github.com/boltdb/bolt"
+	"github.com/spf13/viper"
 	//"io"
 	"encoding/json"
 	"errors"
@@ -10,19 +12,20 @@ import (
 	"log"
 	"time"
 	//"os"
-
-	"github.com/StevenLeRoux/goslash/golang/store/common"
 )
 
 type StoreFile struct {
 	db *bolt.DB
 }
 
-func (s *StoreFile) Update() {}
+func (s *StoreFile) Reload() {}
 
-func (s *StoreFile) Get(alias string) (common.Values, bool) {
+func (s *StoreFile) Close() {
+	s.db.Close()
+}
 
-	var value common.Values
+func (s *StoreFile) Get(alias string) (model.Values, bool) {
+	var value model.Values
 
 	// retrieve the data
 	err := s.db.View(func(tx *bolt.Tx) error {
@@ -43,14 +46,44 @@ func (s *StoreFile) Get(alias string) (common.Values, bool) {
 
 	if err != nil {
 		log.Println(err)
-		return common.Values{}, false
+		return model.Values{}, false
 	}
 
 	return value, true
 }
 
-func (s *StoreFile) Put(v common.Values) error {
+func (s *StoreFile) Dump() ([]model.Values, bool) {
+	var value model.Values
+	values := []model.Values{}
 
+	err := s.db.View(func(tx *bolt.Tx) error {
+
+		bucket := tx.Bucket([]byte("goslash"))
+		if bucket == nil {
+			return fmt.Errorf("Bucket goslash not found!")
+		}
+
+		c := bucket.Cursor()
+
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			if v == nil {
+				break
+			}
+			json.Unmarshal(v, &value)
+			values = append(values, value)
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Println(err)
+		return []model.Values{}, false
+	}
+
+	return values, true
+}
+
+func (s *StoreFile) Put(v model.Values) error {
 	// initialize  bucket
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		log.Println("s.db.Update(fn)")
@@ -80,13 +113,11 @@ func (s *StoreFile) Put(v common.Values) error {
 	return nil
 }
 
-func FileStore(location string) (*StoreFile, error) {
-
-	db, err := bolt.Open(location, 0644, &bolt.Options{Timeout: 1 * time.Second})
+func NewFileStore(v *viper.Viper) (*StoreFile, error) {
+	db, err := bolt.Open(v.GetString("store.location"), 0644, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		log.Fatal("FileStore() - bolt.Open()", err)
 	}
-	//defer db.Close()
 
 	return &StoreFile{db: db}, nil
 
