@@ -1,6 +1,6 @@
 # GoSlash
 
-GoSlash is a redirection service accessible via (http://)go/ that can be use in many ways to increase productivity or ease the day to day web browsing.
+GoSlash is a redirection service accessible via (http://)go/ that can be used in many ways to increase productivity or ease the day to day web browsing.
 
 For example :
 
