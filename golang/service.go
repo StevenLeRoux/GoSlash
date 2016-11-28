@@ -1,5 +1,7 @@
 package main
 
+//go:generate go run scripts/ui.go
+
 import (
 	"encoding/json"
 	"fmt"
@@ -90,6 +92,12 @@ func Get200(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "200 OK")
 }
 
+func GetAlias(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "text/html")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, alias)
+}
+
 func (g goslash) ReloadHandler(w http.ResponseWriter, r *http.Request) {
 	g.store.Reload()
 	w.WriteHeader(http.StatusAccepted)
@@ -137,6 +145,7 @@ func runService(cmd *cobra.Command) {
 	r.HandleFunc("/dump", g.DumpHandler).Methods("GET")
 	r.HandleFunc("/set/{alias:.+}", g.PutHandler).Methods("PUT")
 	r.HandleFunc("/{alias:.+}", g.GoHandler).Methods("GET")
+	r.HandleFunc("/", GetAlias).Methods("GET")
 	http.Handle("/", r)
 	err = http.ListenAndServe(":8080", nil)
 

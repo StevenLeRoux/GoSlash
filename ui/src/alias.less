@@ -1,0 +1,61 @@
+body {
+    background: #3a7bd5;
+    background: -webkit-linear-gradient(to left, #3a6073, #3a7bd5 );
+    background: linear-gradient(to left, #3a6073, #3a7bd5);
+
+    h1 {
+        font-family: 'Bitter', serif;
+    }
+
+    .inner {
+        max-width: 1024px;
+        margin: 0 auto;
+
+        #alias-list {
+            background: rgba(255, 255, 255, 1);
+            border-radius: 3px;
+            overflow: hidden;
+
+            .alias:nth-child(1) {
+                border-top: none;
+            }
+
+            .alias {
+                border-top: 1px solid #333;
+                padding: 16px;
+                position: relative;
+                cursor: pointer;
+
+                h3 {
+                    display: inline-block;
+                    font-family: 'Bitter', serif;
+                    margin: 0;
+                    padding: 0 0 4px;
+                }
+
+                p {
+                    font-family: 'Source Sans Pro', sans-serif;
+                    margin: 0;
+                    padding: 0;
+                }
+
+                .target {
+                    display: inline-block;
+                }
+
+                .icon {
+                    position: absolute;
+                    top: 16px;
+                    right: 16px;
+                    bottom: 16px;
+                    height: 32px;
+                    margin: auto;
+                }
+            }
+
+            .alias:hover {
+              background: #EEE;
+            }
+        }
+    }
+}
